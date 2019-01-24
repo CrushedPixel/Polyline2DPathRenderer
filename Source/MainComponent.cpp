@@ -75,6 +75,12 @@ void MainComponent::shutdown() {
 	GL::glDeleteProgram(programHandle);
 }
 
+static void writeVec2(juce::MemoryOutputStream &out, const crushedpixel::Vec2 &vec) {
+	// write vertices as two consecutive floats
+	out.writeFloat(vec.x);
+	out.writeFloat(vec.y);
+}
+
 void MainComponent::render() {
 	// transform the path into a mesh
 	juce::PathFlatteningIterator it(path, juce::AffineTransform(),
@@ -127,15 +133,21 @@ void MainComponent::render() {
 		subpathClosed = it.closesSubPath;
 	}
 
+	// convert the vertex data into bytes
+	juce::MemoryOutputStream mos;
+	for (auto &vertex : vertices) {
+		writeVec2(mos, vertex);
+	}
+
 	// write the vertices into the buffer, expanding it if necessary
 	GL::glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
 
-	auto newSize = (GLsizei) (sizeof(crushedpixel::Vec2) * vertices.size());
+	auto newSize = (GLsizei) mos.getDataSize();
 	if (newSize > vboSize) {
-		GL::glBufferData(GL_ARRAY_BUFFER, newSize, vertices.data(), GL_DYNAMIC_DRAW);
+		GL::glBufferData(GL_ARRAY_BUFFER, newSize, mos.getData(), GL_DYNAMIC_DRAW);
 		vboSize = newSize;
 	} else {
-		GL::glBufferSubData(GL_ARRAY_BUFFER, 0, newSize, vertices.data());
+		GL::glBufferSubData(GL_ARRAY_BUFFER, 0, newSize, mos.getData());
 	}
 
 	/*
