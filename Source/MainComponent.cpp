@@ -107,7 +107,7 @@ void MainComponent::render() {
 					endCapStyle = crushedpixel::Polyline2D::EndCapStyle::JOINED;
 				}
 
-				auto numVertices = crushedpixel::Polyline2D::create(vertices, points, {thickness, thickness},
+				auto numVertices = crushedpixel::Polyline2D::create(vertices, points, thickness,
 				                                                    crushedpixel::Polyline2D::JointStyle::ROUND,
 				                                                    endCapStyle);
 				subPathVertexCounts.push_back(numVertices);
